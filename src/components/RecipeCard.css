@@ -1,0 +1,78 @@
+.recipe-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 12px;
+  background: var(--bg, #fff);
+  box-shadow: var(--shadow, 0 4px 6px -2px rgba(0, 0, 0, 0.1));
+  text-align: left;
+}
+
+.recipe-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recipe-card-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-h, #08060d);
+}
+
+.recipe-card-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text, #6b6375);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.recipe-card-delete:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.recipe-card-delete-icon {
+  display: block;
+}
+
+.recipe-card-description {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.recipe-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  font-size: 0.85rem;
+}
+
+.recipe-card-category {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent-bg, rgba(170, 59, 255, 0.1));
+  color: var(--accent, #aa3bff);
+}
+
+.recipe-card-time {
+  color: var(--text, #6b6375);
+}
