@@ -1,0 +1,12 @@
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.recipe-grid-empty {
+  padding: 32px;
+  color: var(--text, #6b6375);
+  text-align: center;
+}
