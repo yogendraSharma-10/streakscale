@@ -6,38 +6,31 @@
  */
 
 /**
- * Dietary restrictions a recipe can be tagged with. Kept as a string union
- * (rather than an enum) to stay compatible with `erasableSyntaxOnly` and to
- * make serialization to/from local storage trivial.
+ * The set of supported recipe categories. Kept as a string union so it is
+ * easy to extend and stays compatible with `erasableSyntaxOnly`.
  */
-export type DietaryRestriction =
-  | 'vegetarian'
-  | 'vegan'
-  | 'gluten-free'
-  | 'dairy-free'
-  | 'nut-free'
-  | 'pescatarian'
-
-/** The canonical list of supported dietary restrictions, in display order. */
-export const DIETARY_RESTRICTIONS: readonly DietaryRestriction[] = [
-  'vegetarian',
-  'vegan',
-  'gluten-free',
-  'dairy-free',
-  'nut-free',
-  'pescatarian',
-] as const
+export type Category =
+  | 'breakfast'
+  | 'lunch'
+  | 'dinner'
+  | 'dessert'
+  | 'snack'
+  | 'appetizer'
+  | 'side'
+  | 'drink'
 
 /** A single ingredient line within a recipe. */
 export interface Ingredient {
-  /** Stable unique id for the ingredient (used as a React key). */
-  id: string
   /** The ingredient name, e.g. "olive oil". */
   name: string
-  /** The numeric quantity, e.g. 2. */
-  amount: number
-  /** The unit of measure, e.g. "tbsp", "cup", "g". */
-  unit: string
+  /** The quantity, e.g. "2 cups" or "to taste". */
+  quantity: string
+}
+
+/** A single step-by-step instruction within a recipe. */
+export interface RecipeStep {
+  /** The written instruction for this step. */
+  instruction: string
 }
 
 /** A fully-formed recipe as stored and rendered by the app. */
@@ -46,33 +39,23 @@ export interface Recipe {
   id: string
   /** Human-readable title. */
   title: string
-  /** Short description shown on the card. */
-  description: string
-  /** Free-form category, e.g. "Dinner", "Dessert". */
-  category: string
-  /** Dietary tags used for filtering. */
-  dietaryRestrictions: DietaryRestriction[]
-  /** Number of people the recipe serves. */
-  servings: number
-  /** Active preparation time in minutes. */
-  prepTimeMinutes: number
-  /** Cooking/baking time in minutes. */
-  cookTimeMinutes: number
+  /** Optional short description shown on the card. */
+  description?: string
   /** Ordered list of ingredients. */
   ingredients: Ingredient[]
   /** Ordered list of step-by-step instructions. */
-  steps: string[]
-  /** ISO timestamp of creation. */
-  createdAt: string
-  /** ISO timestamp of last update. */
-  updatedAt: string
+  steps: RecipeStep[]
+  /** The category this recipe belongs to (see {@link Category}). */
+  category: string
+  /** Optional URL of an image to display for the recipe. */
+  imageUrl?: string
 }
 
 /**
  * The shape accepted when creating or updating a recipe. Everything the user
- * can edit, minus the system-managed fields (id, timestamps).
+ * can edit, minus the system-managed id.
  */
-export type RecipeDraft = Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>
+export type RecipeDraft = Omit<Recipe, 'id'>
 
 /** Convenience alias for the fields that can be edited on an existing recipe. */
 export type RecipeInput = RecipeDraft
