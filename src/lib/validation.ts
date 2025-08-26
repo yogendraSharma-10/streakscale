@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DIETARY_RESTRICTIONS } from '@/types'
+import { CATEGORIES } from '@/types'
 
 /**
  * Zod schemas for validating recipe input.
@@ -9,13 +9,13 @@ import { DIETARY_RESTRICTIONS } from '@/types'
  * against these schemas so the rules stay consistent.
  */
 
-const dietaryRestrictionSchema = z.enum(DIETARY_RESTRICTIONS)
-
 const ingredientSchema = z.object({
-  id: z.string().min(1),
   name: z.string().trim().min(1, 'Ingredient name is required'),
-  amount: z.number().finite().nonnegative('Amount must be zero or greater'),
-  unit: z.string().trim().min(1, 'Unit is required'),
+  quantity: z.string().trim().min(1, 'Quantity is required'),
+})
+
+const recipeStepSchema = z.object({
+  instruction: z.string().trim().min(1, 'Step cannot be empty'),
 })
 
 /**
@@ -23,19 +23,11 @@ const ingredientSchema = z.object({
  */
 export const recipeDraftSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(200),
-  description: z.string().trim().max(1000).default(''),
+  description: z.string().trim().max(1000).optional(),
   category: z.string().trim().min(1, 'Category is required').max(100),
-  dietaryRestrictions: z
-    .array(dietaryRestrictionSchema)
-    .default([])
-    .refine((value) => new Set(value).size === value.length, {
-      message: 'Dietary restrictions must be unique',
-    }),
-  servings: z.coerce.number().int().positive('Servings must be a positive integer'),
-  prepTimeMinutes: z.coerce.number().int().nonnegative('Prep time cannot be negative'),
-  cookTimeMinutes: z.coerce.number().int().nonnegative('Cook time cannot be negative'),
   ingredients: z.array(ingredientSchema).min(1, 'At least one ingredient is required'),
-  steps: z.array(z.string().trim().min(1, 'Step cannot be empty')).min(1, 'At least one step is required'),
+  steps: z.array(recipeStepSchema).min(1, 'At least one step is required'),
+  imageUrl: z.string().trim().url('Image URL must be a valid URL').optional(),
 })
 
 /** The inferred type of a validated recipe draft. */
@@ -61,3 +53,6 @@ export function tryValidateRecipeDraft(
   }
   return { ok: false, error: result.error }
 }
+
+/** Re-export the category list for convenience. */
+export { CATEGORIES }
