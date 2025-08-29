@@ -19,6 +19,18 @@ export type Category =
   | 'side'
   | 'drink'
 
+/** The canonical list of supported categories, in display order. */
+export const CATEGORIES: readonly Category[] = [
+  'breakfast',
+  'lunch',
+  'dinner',
+  'dessert',
+  'snack',
+  'appetizer',
+  'side',
+  'drink',
+] as const
+
 /** A single ingredient line within a recipe. */
 export interface Ingredient {
   /** The ingredient name, e.g. "olive oil". */
