@@ -15,12 +15,9 @@ export function seedIfEmpty(repo: RecipeRepository): void {
       title: recipe.title,
       description: recipe.description,
       category: recipe.category,
-      dietaryRestrictions: recipe.dietaryRestrictions,
-      servings: recipe.servings,
-      prepTimeMinutes: recipe.prepTimeMinutes,
-      cookTimeMinutes: recipe.cookTimeMinutes,
       ingredients: recipe.ingredients,
       steps: recipe.steps,
+      imageUrl: recipe.imageUrl,
     })
   }
   logger.info(`Seeded ${SEED_RECIPES.length} sample recipes`)
