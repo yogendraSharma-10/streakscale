@@ -20,12 +20,9 @@ export class MemoryRecipeRepository implements RecipeRepository {
   }
 
   create(draft: RecipeDraft): Recipe {
-    const now = new Date().toISOString()
     const recipe: Recipe = {
       ...draft,
       id: createId('recipe'),
-      createdAt: now,
-      updatedAt: now,
     }
     this.recipes.set(recipe.id, recipe)
     return recipe
@@ -40,7 +37,6 @@ export class MemoryRecipeRepository implements RecipeRepository {
       ...existing,
       ...draft,
       id,
-      updatedAt: new Date().toISOString(),
     }
     this.recipes.set(id, updated)
     return updated
