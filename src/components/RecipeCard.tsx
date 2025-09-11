@@ -1,4 +1,5 @@
 import type { Recipe } from '@/types'
+import { IngredientList } from './IngredientList'
 import './RecipeCard.css'
 
 interface RecipeCardProps {
@@ -6,32 +7,23 @@ interface RecipeCardProps {
 }
 
 /**
- * Displays a single recipe as a card. Shows the recipe image when an
- * imageUrl is present, otherwise falls back to a colored placeholder.
+ * Displays a single recipe as a card. Shows the title, a short description,
+ * and the list of ingredients below the title.
  */
 export function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <article className="recipe-card">
-      {recipe.imageUrl ? (
-        <img
-          className="recipe-card__image"
-          src={recipe.imageUrl}
-          alt={recipe.title}
-          loading="lazy"
-        />
-      ) : (
-        <div className="recipe-card__placeholder" aria-hidden="true" />
-      )}
-      <div className="recipe-card__body">
+      <header className="recipe-card__header">
         <h3 className="recipe-card__title">{recipe.title}</h3>
-        <p className="recipe-card__description">{recipe.description}</p>
-        <div className="recipe-card__meta">
-          <span className="recipe-card__category">{recipe.category}</span>
-          <span className="recipe-card__servings">
-            Serves {recipe.servings}
-          </span>
-        </div>
-      </div>
+        {recipe.description ? (
+          <p className="recipe-card__description">{recipe.description}</p>
+        ) : null}
+      </header>
+
+      <section className="recipe-card__ingredients" aria-label="Ingredients">
+        <h4 className="recipe-card__section-title">Ingredients</h4>
+        <IngredientList ingredients={recipe.ingredients} />
+      </section>
     </article>
   )
 }
