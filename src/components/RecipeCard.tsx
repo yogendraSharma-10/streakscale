@@ -1,29 +1,39 @@
 import type { Recipe } from '@/types'
-import { IngredientList } from './IngredientList'
-import './RecipeCard.css'
 
 interface RecipeCardProps {
   recipe: Recipe
+  onViewSteps: (recipe: Recipe) => void
 }
 
 /**
- * Displays a single recipe as a card. Shows the title, a short description,
- * and the list of ingredients below the title.
+ * Displays a single recipe in the grid with a button that opens the
+ * step-by-step detail modal.
  */
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, onViewSteps }: RecipeCardProps) {
   return (
     <article className="recipe-card">
-      <header className="recipe-card__header">
-        <h3 className="recipe-card__title">{recipe.title}</h3>
-        {recipe.description ? (
-          <p className="recipe-card__description">{recipe.description}</p>
-        ) : null}
-      </header>
-
-      <section className="recipe-card__ingredients" aria-label="Ingredients">
-        <h4 className="recipe-card__section-title">Ingredients</h4>
-        <IngredientList ingredients={recipe.ingredients} />
-      </section>
+      <img
+        className="recipe-card-image"
+        src={`https://placehold.co/400x220?text=${encodeURIComponent(recipe.title)}`}
+        alt={recipe.title}
+      />
+      <div className="recipe-card-body">
+        <h3 className="recipe-card-title">{recipe.title}</h3>
+        <p className="recipe-card-description">{recipe.description}</p>
+        <div className="recipe-card-meta">
+          <span>{recipe.servings} servings</span>
+          <span>
+            {recipe.prepTimeMinutes + recipe.cookTimeMinutes} min
+          </span>
+        </div>
+        <button
+          type="button"
+          className="recipe-card-button"
+          onClick={() => onViewSteps(recipe)}
+        >
+          View Steps
+        </button>
+      </div>
     </article>
   )
 }

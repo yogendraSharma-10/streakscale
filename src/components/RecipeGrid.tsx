@@ -1,21 +1,30 @@
 import type { Recipe } from '@/types'
 import { RecipeCard } from './RecipeCard'
-import './RecipeGrid.css'
 
 interface RecipeGridProps {
   recipes: Recipe[]
+  onViewSteps: (recipe: Recipe) => void
 }
 
 /**
- * Renders a responsive grid of RecipeCard components from a list of recipes.
+ * Responsive grid of recipe cards. Delegates the "View Steps" interaction up
+ * to the parent so it can own the modal state.
  */
-export function RecipeGrid({ recipes }: RecipeGridProps) {
+export function RecipeGrid({ recipes, onViewSteps }: RecipeGridProps) {
+  if (recipes.length === 0) {
+    return <p className="recipe-grid-empty">No recipes found.</p>
+  }
+
   return (
-    <section className="recipe-grid" aria-label="Recipes">
+    <div className="recipe-grid">
       {recipes.map((recipe) => (
-        <RecipeCard key={recipe.id} recipe={recipe} />
+        <RecipeCard
+          key={recipe.id}
+          recipe={recipe}
+          onViewSteps={onViewSteps}
+        />
       ))}
-    </section>
+    </div>
   )
 }
 
