@@ -1,29 +1,25 @@
-import { useState } from 'react'
-import type { Recipe } from '@/types'
-import { RecipeProvider, useRecipes } from '@/context/RecipeProvider'
-import { RecipeGrid } from '@/components/RecipeGrid'
-import { RecipeDetailModal } from '@/components/RecipeDetailModal'
+import { useMemo, useState } from 'react'
+import { RecipeProvider, useRecipes } from './context/RecipeProvider'
+import { CategoryFilter } from './components/CategoryFilter'
+import { RecipeGrid } from './components/RecipeGrid'
+import { collectCategories } from './lib/filtering'
 import './App.css'
 
-function RecipeManager() {
+function RecipeBrowser() {
   const { recipes } = useRecipes()
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState('')
+
+  const categories = useMemo(() => collectCategories(recipes), [recipes])
 
   return (
     <main className="app">
-      <header className="app-header">
-        <h1>Interactive Recipe Manager</h1>
-        <p>Browse recipes and follow the step-by-step instructions.</p>
-      </header>
-
-      <RecipeGrid recipes={recipes} onViewSteps={setSelectedRecipe} />
-
-      {selectedRecipe && (
-        <RecipeDetailModal
-          recipe={selectedRecipe}
-          onClose={() => setSelectedRecipe(null)}
-        />
-      )}
+      <h1>Interactive Recipe Manager</h1>
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onChange={setSelectedCategory}
+      />
+      <RecipeGrid recipes={recipes} filter={selectedCategory} />
     </main>
   )
 }
@@ -31,7 +27,7 @@ function RecipeManager() {
 function App() {
   return (
     <RecipeProvider>
-      <RecipeManager />
+      <RecipeBrowser />
     </RecipeProvider>
   )
 }
