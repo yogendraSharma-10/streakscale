@@ -1,25 +1,16 @@
-import { useMemo, useState } from 'react'
 import { RecipeProvider, useRecipes } from './context/RecipeProvider'
-import { CategoryFilter } from './components/CategoryFilter'
-import { RecipeGrid } from './components/RecipeGrid'
-import { collectCategories } from './lib/filtering'
+import RecipeGrid from './components/RecipeGrid'
 import './App.css'
 
-function RecipeBrowser() {
-  const { recipes } = useRecipes()
-  const [selectedCategory, setSelectedCategory] = useState('')
-
-  const categories = useMemo(() => collectCategories(recipes), [recipes])
+function RecipeManager() {
+  const { recipes, deleteRecipe } = useRecipes()
 
   return (
-    <main className="app">
-      <h1>Interactive Recipe Manager</h1>
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onChange={setSelectedCategory}
-      />
-      <RecipeGrid recipes={recipes} filter={selectedCategory} />
+    <main className="recipe-manager">
+      <header className="recipe-manager-header">
+        <h1>Recipes</h1>
+      </header>
+      <RecipeGrid recipes={recipes} onDelete={deleteRecipe} />
     </main>
   )
 }
@@ -27,7 +18,7 @@ function RecipeBrowser() {
 function App() {
   return (
     <RecipeProvider>
-      <RecipeBrowser />
+      <RecipeManager />
     </RecipeProvider>
   )
 }

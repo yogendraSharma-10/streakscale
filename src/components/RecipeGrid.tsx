@@ -1,35 +1,57 @@
+import { useState } from 'react'
 import type { Recipe } from '@/types'
-import { filterRecipes } from '@/lib/filtering'
+import RecipeCard from './RecipeCard'
+import ConfirmDialog from './ConfirmDialog'
+import './RecipeGrid.css'
 
 interface RecipeGridProps {
-  /** The full list of recipes to display. */
   recipes: Recipe[]
-  /** Optional category to filter by; empty/undefined shows all recipes. */
-  filter?: string
+  /** Called when the user confirms deletion of a recipe. */
+  onDelete: (id: string) => void
 }
 
 /**
- * Renders the recipe collection as a grid. When a category filter is
- * provided, only recipes in that category are shown.
+ * Renders the collection of recipes as a responsive grid. Owns the state of
+ * the delete confirmation dialog: clicking a card's trash button opens it and
+ * confirming calls the parent's `onDelete` callback.
  */
-export function RecipeGrid({ recipes, filter = '' }: RecipeGridProps) {
-  const visibleRecipes = filterRecipes(recipes, { category: filter })
+export default function RecipeGrid({ recipes, onDelete }: RecipeGridProps) {
+  const [pendingDelete, setPendingDelete] = useState<Recipe | null>(null)
 
-  if (visibleRecipes.length === 0) {
-    return <p className="recipe-grid__empty">No recipes found.</p>
+  const handleConfirm = () => {
+    if (pendingDelete) {
+      onDelete(pendingDelete.id)
+    }
+    setPendingDelete(null)
   }
 
   return (
-    <div className="recipe-grid">
-      {visibleRecipes.map((recipe) => (
-        <article key={recipe.id} className="recipe-card">
-          <h3 className="recipe-card__title">{recipe.title}</h3>
-          <p className="recipe-card__description">{recipe.description}</p>
-          <span className="recipe-card__category">{recipe.category}</span>
-        </article>
-      ))}
-    </div>
+    <>
+      {recipes.length === 0 ? (
+        <p className="recipe-grid-empty">No recipes yet.</p>
+      ) : (
+        <div className="recipe-grid">
+          {recipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              onDelete={(target) => setPendingDelete(target)}
+            />
+          ))}
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Delete recipe"
+        message={
+          pendingDelete
+            ? `Are you sure you want to delete "${pendingDelete.title}"? This action cannot be undone.`
+            : ''
+        }
+        onConfirm={handleConfirm}
+        onCancel={() => setPendingDelete(null)}
+      />
+    </>
   )
 }
-
-export default RecipeGrid
