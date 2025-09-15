@@ -1,57 +1,50 @@
 import { useState } from 'react'
 import type { Recipe } from '@/types'
-import RecipeCard from './RecipeCard'
-import ConfirmDialog from './ConfirmDialog'
-import './RecipeGrid.css'
+import { RecipeCard } from './RecipeCard'
+import { RecipeFormModal } from './RecipeFormModal'
+
+/**
+ * Renders the collection of recipes as a responsive grid of cards. Owns the
+ * state for which recipe (if any) is being edited and renders the form modal.
+ * Saving an edited recipe is delegated to the parent via `onSave`.
+ */
 
 interface RecipeGridProps {
   recipes: Recipe[]
-  /** Called when the user confirms deletion of a recipe. */
-  onDelete: (id: string) => void
+  onSave: (recipe: Recipe) => void
 }
 
-/**
- * Renders the collection of recipes as a responsive grid. Owns the state of
- * the delete confirmation dialog: clicking a card's trash button opens it and
- * confirming calls the parent's `onDelete` callback.
- */
-export default function RecipeGrid({ recipes, onDelete }: RecipeGridProps) {
-  const [pendingDelete, setPendingDelete] = useState<Recipe | null>(null)
+export function RecipeGrid({ recipes, onSave }: RecipeGridProps) {
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
 
-  const handleConfirm = () => {
-    if (pendingDelete) {
-      onDelete(pendingDelete.id)
-    }
-    setPendingDelete(null)
+  const handleEdit = (recipe: Recipe) => {
+    setEditingRecipe(recipe)
+  }
+
+  const handleClose = () => {
+    setEditingRecipe(null)
+  }
+
+  const handleSave = (recipe: Recipe) => {
+    onSave(recipe)
+    setEditingRecipe(null)
   }
 
   return (
     <>
-      {recipes.length === 0 ? (
-        <p className="recipe-grid-empty">No recipes yet.</p>
-      ) : (
-        <div className="recipe-grid">
-          {recipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onDelete={(target) => setPendingDelete(target)}
-            />
-          ))}
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        title="Delete recipe"
-        message={
-          pendingDelete
-            ? `Are you sure you want to delete "${pendingDelete.title}"? This action cannot be undone.`
-            : ''
-        }
-        onConfirm={handleConfirm}
-        onCancel={() => setPendingDelete(null)}
+      <div className="recipe-grid">
+        {recipes.map((recipe) => (
+          <RecipeCard key={recipe.id} recipe={recipe} onEdit={handleEdit} />
+        ))}
+      </div>
+      <RecipeFormModal
+        open={editingRecipe !== null}
+        initialRecipe={editingRecipe ?? undefined}
+        onClose={handleClose}
+        onSubmit={handleSave}
       />
     </>
   )
 }
+
+export default RecipeGrid

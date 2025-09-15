@@ -1,291 +1,312 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import type { Recipe } from '@/types'
-import { createIngredientId } from '@/lib/id'
+import type { Recipe, RecipeDraft, Ingredient, DietaryRestriction } from '@/types'
+import { DIETARY_RESTRICTIONS } from '@/types'
+import { createId, createIngredientId } from '@/lib/id'
 
 /**
- * The shape of the data produced by the add-recipe form: a full recipe minus
- * the system-managed `id`. `imageUrl` is an optional extra field surfaced by
- * the form so users can attach a photo.
+ * Modal form for creating and editing recipes.
+ *
+ * When `initialRecipe` is provided the fields are pre-filled with its data and
+ * submitting calls `onSubmit` with the updated recipe (preserving the id and
+ * creation timestamp). When omitted the form starts empty and a new id is
+ * generated on submit.
  */
-export type RecipeFormData = Omit<Recipe, 'id'> & { imageUrl?: string }
-
-/** The category options shown in the form's select dropdown. */
-const CATEGORY_OPTIONS = [
-  'Breakfast',
-  'Lunch',
-  'Dinner',
-  'Dessert',
-  'Snack',
-  'Drink',
-  'Other',
-] as const
-
-interface IngredientRow {
-  id: string
-  name: string
-  quantity: string
-}
 
 interface RecipeFormModalProps {
   open: boolean
+  initialRecipe?: Recipe
   onClose: () => void
-  onSubmit: (data: RecipeFormData) => void
+  onSubmit: (recipe: Recipe) => void
 }
 
-const EMPTY_INGREDIENT = (): IngredientRow => ({
-  id: createIngredientId(),
-  name: '',
-  quantity: '',
-})
+function toDraft(recipe?: Recipe): RecipeDraft {
+  if (!recipe) {
+    return {
+      title: '',
+      description: '',
+      category: '',
+      dietaryRestrictions: [],
+      servings: 1,
+      prepTimeMinutes: 0,
+      cookTimeMinutes: 0,
+      ingredients: [{ id: createIngredientId(), name: '', amount: 1, unit: '' }],
+      steps: [''],
+    }
+  }
+  return {
+    title: recipe.title,
+    description: recipe.description,
+    category: recipe.category,
+    dietaryRestrictions: [...recipe.dietaryRestrictions],
+    servings: recipe.servings,
+    prepTimeMinutes: recipe.prepTimeMinutes,
+    cookTimeMinutes: recipe.cookTimeMinutes,
+    ingredients: recipe.ingredients.map((ingredient) => ({ ...ingredient })),
+    steps: [...recipe.steps],
+  }
+}
 
-/**
- * Modal dialog for adding a new recipe. Renders a fixed overlay containing a
- * form with title, description, category, image URL, and dynamic lists of
- * ingredients and steps. Validates that a title plus at least one ingredient
- * and one step are present before calling `onSubmit`.
- */
-export default function RecipeFormModal({
+export function RecipeFormModal({
   open,
+  initialRecipe,
   onClose,
   onSubmit,
 }: RecipeFormModalProps) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<string>(CATEGORY_OPTIONS[0])
-  const [imageUrl, setImageUrl] = useState('')
-  const [ingredients, setIngredients] = useState<IngredientRow[]>([
-    EMPTY_INGREDIENT(),
-  ])
-  const [steps, setSteps] = useState<string[]>([''])
-  const [error, setError] = useState<string | null>(null)
+  const [draft, setDraft] = useState<RecipeDraft>(() => toDraft(initialRecipe))
 
-  // Reset the form whenever the modal is (re)opened so stale data never leaks
-  // between submissions.
+  // Re-sync the form whenever the modal opens so stale state never leaks
+  // between editing one recipe and the next (or between add and edit).
   useEffect(() => {
     if (open) {
-      setTitle('')
-      setDescription('')
-      setCategory(CATEGORY_OPTIONS[0])
-      setImageUrl('')
-      setIngredients([EMPTY_INGREDIENT()])
-      setSteps([''])
-      setError(null)
+      setDraft(toDraft(initialRecipe))
     }
-  }, [open])
+  }, [open, initialRecipe])
 
   if (!open) {
     return null
   }
 
-  const updateIngredient = (id: string, patch: Partial<IngredientRow>) => {
-    setIngredients((rows) =>
-      rows.map((row) => (row.id === id ? { ...row, ...patch } : row)),
-    )
+  const setField = <K extends keyof RecipeDraft>(key: K, value: RecipeDraft[K]) => {
+    setDraft((current) => ({ ...current, [key]: value }))
+  }
+
+  const toggleRestriction = (restriction: DietaryRestriction) => {
+    setDraft((current) => {
+      const has = current.dietaryRestrictions.includes(restriction)
+      return {
+        ...current,
+        dietaryRestrictions: has
+          ? current.dietaryRestrictions.filter((item) => item !== restriction)
+          : [...current.dietaryRestrictions, restriction],
+      }
+    })
+  }
+
+  const updateIngredient = (id: string, patch: Partial<Ingredient>) => {
+    setDraft((current) => ({
+      ...current,
+      ingredients: current.ingredients.map((ingredient) =>
+        ingredient.id === id ? { ...ingredient, ...patch } : ingredient,
+      ),
+    }))
   }
 
   const addIngredient = () => {
-    setIngredients((rows) => [...rows, EMPTY_INGREDIENT()])
+    setDraft((current) => ({
+      ...current,
+      ingredients: [
+        ...current.ingredients,
+        { id: createIngredientId(), name: '', amount: 1, unit: '' },
+      ],
+    }))
   }
 
   const removeIngredient = (id: string) => {
-    setIngredients((rows) => rows.filter((row) => row.id !== id))
+    setDraft((current) => ({
+      ...current,
+      ingredients: current.ingredients.filter((ingredient) => ingredient.id !== id),
+    }))
   }
 
   const updateStep = (index: number, value: string) => {
-    setSteps((list) => list.map((step, i) => (i === index ? value : step)))
+    setDraft((current) => ({
+      ...current,
+      steps: current.steps.map((step, i) => (i === index ? value : step)),
+    }))
   }
 
   const addStep = () => {
-    setSteps((list) => [...list, ''])
+    setDraft((current) => ({ ...current, steps: [...current.steps, ''] }))
   }
 
   const removeStep = (index: number) => {
-    setSteps((list) => list.filter((_, i) => i !== index))
+    setDraft((current) => ({
+      ...current,
+      steps: current.steps.filter((_, i) => i !== index),
+    }))
   }
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-
-    const trimmedTitle = title.trim()
-    const validIngredients = ingredients.filter(
-      (row) => row.name.trim() !== '' && row.quantity.trim() !== '',
-    )
-    const validSteps = steps.map((step) => step.trim()).filter((step) => step !== '')
-
-    if (!trimmedTitle) {
-      setError('Please provide a title.')
-      return
+    const now = new Date().toISOString()
+    const recipe: Recipe = {
+      ...draft,
+      id: initialRecipe?.id ?? createId('recipe'),
+      createdAt: initialRecipe?.createdAt ?? now,
+      updatedAt: now,
     }
-    if (validIngredients.length === 0) {
-      setError('Add at least one ingredient with a name and quantity.')
-      return
-    }
-    if (validSteps.length === 0) {
-      setError('Add at least one step.')
-      return
-    }
-
-    const data: RecipeFormData = {
-      title: trimmedTitle,
-      description: description.trim(),
-      category,
-      imageUrl: imageUrl.trim(),
-      dietaryRestrictions: [],
-      servings: 1,
-      prepTimeMinutes: 0,
-      cookTimeMinutes: 0,
-      ingredients: validIngredients.map((row) => ({
-        id: row.id,
-        name: row.name.trim(),
-        amount: Number.parseFloat(row.quantity) || 0,
-        unit: '',
-      })),
-      steps: validSteps,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    onSubmit(data)
-    onClose()
+    onSubmit(recipe)
   }
 
   return (
-    <div
-      className="recipe-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Add recipe"
-      onClick={onClose}
-    >
-      <div
-        className="recipe-modal"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="recipe-modal-header">
-          <h2>Add Recipe</h2>
-          <button
-            type="button"
-            className="recipe-modal-close"
-            aria-label="Close"
-            onClick={onClose}
-          >
-            &times;
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Recipe form">
+      <div className="modal">
+        <div className="modal-header">
+          <h2>{initialRecipe ? 'Edit Recipe' : 'Add Recipe'}</h2>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
+            ×
           </button>
         </div>
 
         <form className="recipe-form" onSubmit={handleSubmit}>
-          <label className="recipe-field">
-            <span>Title *</span>
+          <div className="form-field">
+            <label htmlFor="recipe-title">Title</label>
             <input
+              id="recipe-title"
               type="text"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="e.g. Creamy Mushroom Risotto"
+              value={draft.title}
+              onChange={(e) => setField('title', e.target.value)}
+              required
             />
-          </label>
+          </div>
 
-          <label className="recipe-field">
-            <span>Description</span>
+          <div className="form-field">
+            <label htmlFor="recipe-description">Description</label>
             <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Short description shown on the card"
-              rows={3}
+              id="recipe-description"
+              value={draft.description}
+              onChange={(e) => setField('description', e.target.value)}
+              rows={2}
             />
-          </label>
+          </div>
 
-          <label className="recipe-field">
-            <span>Category</span>
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-            >
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="recipe-category">Category</label>
+              <input
+                id="recipe-category"
+                type="text"
+                value={draft.category}
+                onChange={(e) => setField('category', e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="recipe-servings">Servings</label>
+              <input
+                id="recipe-servings"
+                type="number"
+                min={1}
+                value={draft.servings}
+                onChange={(e) => setField('servings', Number(e.target.value))}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="recipe-prep">Prep time (min)</label>
+              <input
+                id="recipe-prep"
+                type="number"
+                min={0}
+                value={draft.prepTimeMinutes}
+                onChange={(e) => setField('prepTimeMinutes', Number(e.target.value))}
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="recipe-cook">Cook time (min)</label>
+              <input
+                id="recipe-cook"
+                type="number"
+                min={0}
+                value={draft.cookTimeMinutes}
+                onChange={(e) => setField('cookTimeMinutes', Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <fieldset className="form-field">
+            <legend>Dietary restrictions</legend>
+            <div className="restriction-options">
+              {DIETARY_RESTRICTIONS.map((restriction) => (
+                <label key={restriction} className="restriction-option">
+                  <input
+                    type="checkbox"
+                    checked={draft.dietaryRestrictions.includes(restriction)}
+                    onChange={() => toggleRestriction(restriction)}
+                  />
+                  {restriction}
+                </label>
               ))}
-            </select>
-          </label>
+            </div>
+          </fieldset>
 
-          <label className="recipe-field">
-            <span>Image URL</span>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(event) => setImageUrl(event.target.value)}
-              placeholder="https://example.com/photo.jpg"
-            />
-          </label>
-
-          <fieldset className="recipe-fieldset">
-            <legend>Ingredients *</legend>
-            {ingredients.map((row) => (
-              <div className="recipe-row" key={row.id}>
+          <fieldset className="form-field">
+            <legend>Ingredients</legend>
+            {draft.ingredients.map((ingredient, index) => (
+              <div key={ingredient.id} className="ingredient-row">
                 <input
                   type="text"
-                  value={row.name}
-                  onChange={(event) =>
-                    updateIngredient(row.id, { name: event.target.value })
+                  placeholder="Name"
+                  value={ingredient.name}
+                  onChange={(e) => updateIngredient(ingredient.id, { name: e.target.value })}
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  min={0}
+                  value={ingredient.amount}
+                  onChange={(e) =>
+                    updateIngredient(ingredient.id, { amount: Number(e.target.value) })
                   }
-                  placeholder="Ingredient name"
                 />
                 <input
                   type="text"
-                  value={row.quantity}
-                  onChange={(event) =>
-                    updateIngredient(row.id, { quantity: event.target.value })
-                  }
-                  placeholder="Quantity"
+                  placeholder="Unit"
+                  value={ingredient.unit}
+                  onChange={(e) => updateIngredient(ingredient.id, { unit: e.target.value })}
+                  required
                 />
                 <button
                   type="button"
-                  className="recipe-row-remove"
-                  onClick={() => removeIngredient(row.id)}
-                  disabled={ingredients.length === 1}
+                  onClick={() => removeIngredient(ingredient.id)}
+                  disabled={draft.ingredients.length <= 1}
+                  aria-label={`Remove ingredient ${index + 1}`}
                 >
                   Remove
                 </button>
               </div>
             ))}
-            <button type="button" className="recipe-add" onClick={addIngredient}>
-              + Add ingredient
+            <button type="button" onClick={addIngredient}>
+              Add ingredient
             </button>
           </fieldset>
 
-          <fieldset className="recipe-fieldset">
-            <legend>Steps *</legend>
-            {steps.map((step, index) => (
-              <div className="recipe-row" key={index}>
-                <input
-                  type="text"
+          <fieldset className="form-field">
+            <legend>Steps</legend>
+            {draft.steps.map((step, index) => (
+              <div key={index} className="step-row">
+                <span className="step-index">{index + 1}.</span>
+                <textarea
                   value={step}
-                  onChange={(event) => updateStep(index, event.target.value)}
-                  placeholder={`Step ${index + 1}`}
+                  onChange={(e) => updateStep(index, e.target.value)}
+                  rows={2}
+                  required
                 />
                 <button
                   type="button"
-                  className="recipe-row-remove"
                   onClick={() => removeStep(index)}
-                  disabled={steps.length === 1}
+                  disabled={draft.steps.length <= 1}
+                  aria-label={`Remove step ${index + 1}`}
                 >
                   Remove
                 </button>
               </div>
             ))}
-            <button type="button" className="recipe-add" onClick={addStep}>
-              + Add step
+            <button type="button" onClick={addStep}>
+              Add step
             </button>
           </fieldset>
 
-          {error && <p className="recipe-error">{error}</p>}
-
-          <div className="recipe-modal-actions">
-            <button type="button" className="recipe-cancel" onClick={onClose}>
+          <div className="modal-actions">
+            <button type="button" className="button-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="recipe-submit">
-              Save Recipe
+            <button type="submit" className="button-primary">
+              {initialRecipe ? 'Save Changes' : 'Add Recipe'}
             </button>
           </div>
         </form>
@@ -293,3 +314,5 @@ export default function RecipeFormModal({
     </div>
   )
 }
+
+export default RecipeFormModal
