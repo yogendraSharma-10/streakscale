@@ -1,0 +1,25 @@
+# Global owner: project author
+* @project-author
+
+# Main source directories
+/src @project-author
+/src/components @project-author
+/src/lib @project-author
+/src/context @project-author
+/src/types @project-author
+/src/data @project-author
+/src/assets @project-author
+
+# Configuration and build files
+/package.json @project-author
+/vite.config.ts @project-author
+/vitest.config.ts @project-author
+/tsconfig.json @project-author
+/tsconfig.app.json @project-author
+/tsconfig.node.json @project-author
+
+# Documentation
+/README.md @project-author
+/CONTRIBUTING.md @project-author
+/CHANGELOG.md @project-author
+/SECURITY.md @project-author
