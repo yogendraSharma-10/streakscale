@@ -1,0 +1,42 @@
+# Codecov configuration
+# See https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  status:
+    project:
+      default:
+        # Fail the build if overall project coverage drops by more than 1%.
+        target: auto
+        threshold: 1%
+        base: auto
+    patch:
+      default:
+        # Fail the build if the patch coverage drops by more than 5%.
+        target: auto
+        threshold: 5%
+
+ignore:
+  # Test files and test helpers.
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/__tests__/**"
+  - "**/test/**"
+  - "**/tests/**"
+
+  # Configuration and build files.
+  - "vite.config.ts"
+  - "vitest.config.ts"
+  - "**/*.config.ts"
+  - "**/*.config.js"
+  - "**/*.config.mjs"
+  - "**/*.config.cjs"
+  - "**/config/**"
+  - "**/types/**"
+  - "**/types.ts"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
