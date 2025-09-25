@@ -1,0 +1,38 @@
+# Normalize line endings for all text files.
+* text=auto
+
+# Source files: force LF line endings on checkout.
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.json  text eol=lf
+*.jsonc text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.svg   text eol=lf
+
+# Binary files should never be normalized.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
+
+# Linguist hints: treat lockfiles and vendored/generated files appropriately.
+package-lock.json linguist-generated
+*.min.js      linguist-generated
+*.min.css     linguist-generated
+
+# Mark configuration and docs as documentation for language stats.
+*.md      linguist-documentation
+*.mdx     linguist-documentation
+*.txt     linguist-documentation
