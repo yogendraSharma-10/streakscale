@@ -28,25 +28,25 @@ const DEFAULTS: AppConfig = {
 }
 
 function readEnv(): Partial<AppConfig> {
-  const env = import.meta.env ?? {}
+  const env = import.meta.env
   const config: Partial<AppConfig> = {}
 
-  const storage = env.VITE_RECIPE_STORAGE as string | undefined
+  const storage = env.VITE_RECIPE_STORAGE
   if (storage === 'memory' || storage === 'local') {
     config.storage = storage
   }
 
-  const storageKey = env.VITE_RECIPE_STORAGE_KEY as string | undefined
+  const storageKey = env.VITE_RECIPE_STORAGE_KEY
   if (storageKey) {
     config.storageKey = storageKey
   }
 
-  const logLevel = env.VITE_LOG_LEVEL as string | undefined
+  const logLevel = env.VITE_LOG_LEVEL
   if (logLevel === 'debug' || logLevel === 'info' || logLevel === 'warn' || logLevel === 'error' || logLevel === 'silent') {
     config.logLevel = logLevel
   }
 
-  const seed = env.VITE_SEED_ON_FIRST_RUN as string | undefined
+  const seed = env.VITE_SEED_ON_FIRST_RUN
   if (seed !== undefined) {
     config.seedOnFirstRun = seed !== 'false' && seed !== '0'
   }
