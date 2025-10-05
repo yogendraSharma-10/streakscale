@@ -11,7 +11,11 @@ import { BadRequestError } from '@/lib/errors'
  * directly.
  */
 export class RecipeService {
-  constructor(private readonly repo: RecipeRepository) {}
+  private readonly repo: RecipeRepository
+
+  constructor(repo: RecipeRepository) {
+    this.repo = repo
+  }
 
   list(): Recipe[] {
     return this.repo.list()
