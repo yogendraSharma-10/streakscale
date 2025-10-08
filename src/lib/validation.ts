@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CATEGORIES } from '@/types'
+import { CATEGORIES, DIETARY_RESTRICTIONS } from '@/types'
 
 /**
  * Zod schemas for validating recipe input.
@@ -10,13 +10,13 @@ import { CATEGORIES } from '@/types'
  */
 
 const ingredientSchema = z.object({
+  id: z.string().min(1, 'Ingredient id is required'),
   name: z.string().trim().min(1, 'Ingredient name is required'),
-  quantity: z.string().trim().min(1, 'Quantity is required'),
+  amount: z.number().nonnegative('Amount cannot be negative'),
+  unit: z.string().trim().min(1, 'Unit is required'),
 })
 
-const recipeStepSchema = z.object({
-  instruction: z.string().trim().min(1, 'Step cannot be empty'),
-})
+const dietaryRestrictionSchema = z.enum(DIETARY_RESTRICTIONS)
 
 /**
  * Validates a full recipe draft (everything the user can edit).
@@ -25,8 +25,14 @@ export const recipeDraftSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(200),
   description: z.string().trim().max(1000).optional(),
   category: z.string().trim().min(1, 'Category is required').max(100),
+  dietaryRestrictions: z.array(dietaryRestrictionSchema).default([]),
+  servings: z.number().int().positive('Servings must be a positive integer'),
+  prepTimeMinutes: z.number().nonnegative('Prep time cannot be negative'),
+  cookTimeMinutes: z.number().nonnegative('Cook time cannot be negative'),
   ingredients: z.array(ingredientSchema).min(1, 'At least one ingredient is required'),
-  steps: z.array(recipeStepSchema).min(1, 'At least one step is required'),
+  steps: z
+    .array(z.string().trim().min(1, 'Step cannot be empty'))
+    .min(1, 'At least one step is required'),
   imageUrl: z.string().trim().url('Image URL must be a valid URL').optional(),
 })
 
