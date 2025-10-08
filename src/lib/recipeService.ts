@@ -1,5 +1,5 @@
 import type { Recipe, RecipeDraft, RecipeRepository } from '@/types'
-import { validateRecipeDraft } from '@/lib/validation'
+import { tryValidateRecipeDraft } from '@/lib/validation'
 import { requireRecipe } from '@/lib/repositories/memory'
 import { BadRequestError } from '@/lib/errors'
 
