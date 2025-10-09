@@ -48,7 +48,7 @@ export class RecipeService {
   }
 
   private parseDraft(input: unknown): RecipeDraft {
-    const result = validateRecipeDraft(input)
+    const result = tryValidateRecipeDraft(input)
     if (!result.ok) {
       const firstIssue = result.error.issues[0]
       const message = firstIssue
