@@ -16,7 +16,9 @@ const ingredientSchema = z.object({
   unit: z.string().trim().min(1, 'Unit is required'),
 })
 
-const dietaryRestrictionSchema = z.enum(DIETARY_RESTRICTIONS)
+const dietaryRestrictionSchema = z.enum(
+  [...DIETARY_RESTRICTIONS] as [DietaryRestriction, ...DietaryRestriction[]],
+)
 
 /**
  * Validates a full recipe draft (everything the user can edit).
