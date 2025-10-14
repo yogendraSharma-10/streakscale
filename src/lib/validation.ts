@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CATEGORIES, DIETARY_RESTRICTIONS } from '@/types'
+import { CATEGORIES, DIETARY_RESTRICTIONS, type DietaryRestriction } from '@/types'
 
 /**
  * Zod schemas for validating recipe input.
