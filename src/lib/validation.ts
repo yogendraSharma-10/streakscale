@@ -38,15 +38,38 @@ export const recipeDraftSchema = z.object({
   imageUrl: z.string().trim().url('Image URL must be a valid URL').optional(),
 })
 
-/** The inferred type of a validated recipe draft. */
-export type RecipeDraftSchema = z.infer<typeof recipeDraftSchema>
+/**
+ * The shape of a validated recipe draft.
+ *
+ * This is defined explicitly (rather than via `z.infer`) because zod's
+ * inferred output type marks every field optional. At runtime the schema's
+ * defaults and required fields guarantee a complete draft, so we describe the
+ * guaranteed shape here and cast the parsed result to it.
+ */
+export type RecipeDraftSchema = {
+  title: string
+  description?: string
+  category: string
+  dietaryRestrictions: DietaryRestriction[]
+  servings: number
+  prepTimeMinutes: number
+  cookTimeMinutes: number
+  ingredients: {
+    id: string
+    name: string
+    amount: number
+    unit: string
+  }[]
+  steps: string[]
+  imageUrl?: string
+}
 
 /**
  * Validates an unknown value as a recipe draft. Throws a ZodError on failure
  * so callers can surface field-level messages.
  */
 export function validateRecipeDraft(value: unknown): RecipeDraftSchema {
-  return recipeDraftSchema.parse(value)
+  return recipeDraftSchema.parse(value) as RecipeDraftSchema
 }
 
 /**
@@ -57,7 +80,7 @@ export function tryValidateRecipeDraft(
 ): { ok: true; data: RecipeDraftSchema } | { ok: false; error: z.ZodError } {
   const result = recipeDraftSchema.safeParse(value)
   if (result.success) {
-    return { ok: true, data: result.data }
+    return { ok: true, data: result.data as RecipeDraftSchema }
   }
   return { ok: false, error: result.error }
 }
