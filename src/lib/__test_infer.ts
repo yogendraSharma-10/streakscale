@@ -1,7 +1,7 @@
 import { tryValidateRecipeDraft } from '@/lib/validation'
 function f(input: unknown) {
   const result = tryValidateRecipeDraft(input)
-  if (!result.ok) {
+  if (result.ok === false) {
     const e = result.error
     console.log(e)
   }

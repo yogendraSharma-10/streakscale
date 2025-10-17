@@ -49,7 +49,7 @@ export class RecipeService {
 
   private parseDraft(input: unknown): RecipeDraft {
     const result = tryValidateRecipeDraft(input)
-    if (!result.ok) {
+    if (result.ok === false) {
       const firstIssue = result.error.issues[0]
       const message = firstIssue
         ? `${firstIssue.path.join('.')}: ${firstIssue.message}`
