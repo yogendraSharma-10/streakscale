@@ -48,7 +48,7 @@ export const recipeDraftSchema = z.object({
  */
 export type RecipeDraftSchema = {
   title: string
-  description?: string
+  description: string
   category: string
   dietaryRestrictions: DietaryRestriction[]
   servings: number
