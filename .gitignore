@@ -115,3 +115,4 @@ lerna-debug.log*
 *.local
 *.orig
 *.rej
+.aider*
